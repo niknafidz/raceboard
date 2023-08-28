@@ -9,13 +9,28 @@ function fetchData() {
             const category400 = [];
             const racerMap = new Map(); // Store racer data by name
 
-            rows.forEach(row => {
-                const [dateTime, idNumber, name, cc, totalTimeSec, lastLapTimeSec, totalTime, lastLapTime, lapRound] = row.split(',');
+            rows.forEach((row, index) => {
+                // Skip the header row (assuming it's the first row)
+                if (index === 0) return;
+
+                const [
+                    dateTime,
+                    idNumber,
+                    name,
+                    cc,
+                    _totalTimeSec, // Rename the variable to avoid conflicts with the header name
+                    lastLapTimeSec,
+                    totalTime,
+                    lastLapTime,
+                    lapRound
+                ] = row.split(',');
+
+                const totalTimeSec = parseFloat(_totalTimeSec); // Parse "Total Time (sec)" as a float
 
                 const racer = {
                     name,
-                    totalTime,
-                    lastLapTime,
+                    totalTimeSec,
+                    lastLapTimeSec: parseFloat(lastLapTimeSec),
                     lapRound: parseInt(lapRound),
                 };
 
@@ -24,12 +39,12 @@ function fetchData() {
                     // Update lap data if needed
                     const existingRacer = racerMap.get(name);
                     if (lapRound > existingRacer.lapRound) {
-                        existingRacer.totalTime = totalTime;
-                        existingRacer.lastLapTime = lastLapTime;
+                        existingRacer.totalTimeSec = totalTimeSec;
+                        existingRacer.lastLapTimeSec = lastLapTimeSec;
                         existingRacer.lapRound = lapRound;
                     } else if (lapRound === existingRacer.lapRound && totalTimeSec < existingRacer.totalTimeSec) {
-                        existingRacer.totalTime = totalTime;
-                        existingRacer.lastLapTime = lastLapTime;
+                        existingRacer.totalTimeSec = totalTimeSec;
+                        existingRacer.lastLapTimeSec = lastLapTimeSec;
                     }
                 } else {
                     racerMap.set(name, racer);
@@ -58,6 +73,9 @@ function fetchData() {
             displayLeaderboard('category-1000-body', category1000);
             displayLeaderboard('category-600-body', category600);
             displayLeaderboard('category-400-body', category400);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
         });
 }
 
@@ -67,10 +85,17 @@ function compareRacers(a, b) {
         return b.lapRound - a.lapRound; // Sort by lap round descending
     } else {
         // If lap rounds are the same, sort by total time ascending
-        return parseFloat(a.totalTimeSec) - parseFloat(b.totalTimeSec);
+        return a.totalTimeSec - b.totalTimeSec;
     }
 }
 
+// Function to format seconds as HH:MM:SS
+function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
 
 // Function to display the leaderboard data in HTML table
 function displayLeaderboard(tableId, data) {
@@ -85,23 +110,19 @@ function displayLeaderboard(tableId, data) {
         const lapRound = parseInt(racer.lapRound);
 
         const lapsBehind = index === 0 ? '' : `(${numberOneLapRound - lapRound} laps behind)`;
-        const lastLapTimeWithLapsBehind = `${racer.lastLapTime} ${lapsBehind}`;
+        const lastLapTimeWithLapsBehind = `${formatTime(racer.lastLapTimeSec)} ${lapsBehind}`;
 
         const newRow = `
             <tr>
                 <td>${rank}</td>
                 <td>${racer.name}</td>
-                <td>${racer.totalTime} / ${racer.lapRound} laps </td>
+                <td>${formatTime(racer.totalTimeSec)} / ${racer.lapRound} laps </td>
                 <td>${lastLapTimeWithLapsBehind}</td>
             </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', newRow);
     });
 }
-
-
-
-
 
 // Fetch and process data when the page loads
 fetchData();
