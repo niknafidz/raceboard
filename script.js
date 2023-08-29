@@ -19,17 +19,19 @@ function fetchData() {
                     name,
                     cc,
                     _totalTimeSec, // Rename the variable to avoid conflicts with the header name
-                    lastLapTimeSec,
+                    _lastLapTimeSec,
                     totalTime,
                     lastLapTime,
                     lapRound
                 ] = row.split(',');
 
                 const totalTimeSec = parseFloat(_totalTimeSec); // Parse "Total Time (sec)" as a float
+                const lastLapTimeSec = parseFloat(_lastLapTimeSec);
+
 
                 const racer = {
                     name,
-                    totalTimeSec,
+                    totalTimeSec: parseFloat(totalTimeSec),
                     lastLapTimeSec: parseFloat(lastLapTimeSec),
                     lapRound: parseInt(lapRound),
                 };
@@ -85,7 +87,7 @@ function compareRacers(a, b) {
         return b.lapRound - a.lapRound; // Sort by lap round descending
     } else {
         // If lap rounds are the same, sort by total time ascending
-        return a.totalTimeSec - b.totalTimeSec;
+        return a.lastLapTimeSec - b.lastLapTimeSec;
     }
 }
 
