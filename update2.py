@@ -3,7 +3,7 @@ import time
 import subprocess
 
 # Set the path to your local repository and CSV file
-repo_path = 'C:\\Users\\USER\\Desktop\\repo4\\raceboard'
+repo_path = 'C:\\Users\\Nik Nafidz\\OneDrive\\Desktop\\repo4\\raceboard'
 csv_file = 'scanned_data_log.csv'
 
 while True:
