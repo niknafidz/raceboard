@@ -26,8 +26,8 @@ function fetchData() {
                 ] = row.split(',');
 
                 
-
-
+                //first log
+                console.log(`Parsed lapRound: ${lapRound}`);
                 const totalTimeSec = parseFloat(_totalTimeSec); // Parse "Total Time (sec)" as a float
                 const lastLapTimeSec = parseFloat(_lastLapTimeSec);
 
@@ -115,15 +115,20 @@ function displayLeaderboard(tableId, data) {
         const lapRound = parseInt(racer.lapRound);
 
         // Log the values for debugging
-    
+        //second log
         console.log(`lapRound: ${lapRound}`);
 
         // Format lap count to always display two digits
-        const formattedLapRound = lapRound < 10 ? `0${lapRound}` : lapRound;
+    
+        const formattedLapRound = lapRound < 10 ? `0${lapRound}` : lapRound.toString();
+
 
 
         const lapsBehind = index === 0 ? '' : `(${numberOneLapRound - lapRound} laps behind)`;
         const lastLapTimeWithLapsBehind = `${formatTime(racer.lastLapTimeSec)} ${lapsBehind}`;
+
+        
+        console.log(`formattedLapRound: ${formattedLapRound}`);
 
         const newRow = `
             <tr>
