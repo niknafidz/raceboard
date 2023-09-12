@@ -13,59 +13,63 @@ function fetchData() {
                 // Skip the header row (assuming it's the first row)
                 if (index === 0) return;
 
-                const [
-                    dateTime,
-                    idNumber,
-                    name,
-                    cc,
-                    _totalTimeSec, // Rename the variable to avoid conflicts with the header name
-                    _lastLapTimeSec,
-                    totalTime,
-                    lastLapTime,
-                    lapRound
-                ] = row.split(',');
+                const values = row.split(',');
 
-                
-                //first log
-                console.log(`Parsed lapRound: ${lapRound}`);
-                const totalTimeSec = parseFloat(_totalTimeSec); // Parse "Total Time (sec)" as a float
-                const lastLapTimeSec = parseFloat(_lastLapTimeSec);
+                // Check if the number of values is as expected (9 in your case)
+                if (values.length === 9) {
+                    const [
+                        dateTime,
+                        idNumber,
+                        name,
+                        cc,
+                        _totalTimeSec,
+                        _lastLapTimeSec,
+                        totalTime,
+                        lastLapTime,
+                        lapRound
+                    ] = values;
 
+                    // Convert lapRound to an integer and format it with leading zeros
+                    const formattedLapRound = parseInt(lapRound, 10).toString().padStart(2, '0');
 
-                const racer = {
-                    name,
-                    totalTimeSec: parseFloat(totalTimeSec),
-                    lastLapTimeSec: parseFloat(lastLapTimeSec),
-                    lapRound: parseInt(lapRound, 10),
-                };
+                    const racer = {
+                        name,
+                        totalTimeSec: parseFloat(_totalTimeSec),
+                        lastLapTimeSec: parseFloat(_lastLapTimeSec),
+                        lapRound: parseInt(formattedLapRound, 10),
+                    };
 
-                // Check if racer already exists in the map
-                if (racerMap.has(name)) {
-                    // Update lap data if needed
-                    const existingRacer = racerMap.get(name);
-                    if (lapRound > existingRacer.lapRound) {
-                        existingRacer.totalTimeSec = totalTimeSec;
-                        existingRacer.lastLapTimeSec = lastLapTimeSec;
-                        existingRacer.lapRound = lapRound;
-                    } else if (lapRound === existingRacer.lapRound && totalTimeSec < existingRacer.totalTimeSec) {
-                        existingRacer.totalTimeSec = totalTimeSec;
-                        existingRacer.lastLapTimeSec = lastLapTimeSec;
+                    // Check if racer already exists in the map
+                    if (racerMap.has(name)) {
+                        // Update lap data if needed
+                        const existingRacer = racerMap.get(name);
+                        if (formattedLapRound > existingRacer.lapRound) {
+                            existingRacer.totalTimeSec = racer.totalTimeSec;
+                            existingRacer.lastLapTimeSec = racer.lastLapTimeSec;
+                            existingRacer.lapRound = racer.lapRound;
+                        } else if (formattedLapRound === existingRacer.lapRound && racer.totalTimeSec < existingRacer.totalTimeSec) {
+                            existingRacer.totalTimeSec = racer.totalTimeSec;
+                            existingRacer.lastLapTimeSec = racer.lastLapTimeSec;
+                        }
+                    } else {
+                        racerMap.set(name, racer);
+
+                        // Categorize the racer only if it's not already in the category
+                        switch (cc) {
+                            case '1000 cc':
+                                category1000.push(racer);
+                                break;
+                            case '600 cc':
+                                category600.push(racer);
+                                break;
+                            case '400 cc':
+                                category400.push(racer);
+                                break;
+                        }
                     }
                 } else {
-                    racerMap.set(name, racer);
-
-                    // Categorize the racer only if it's not already in the category
-                    switch (cc) {
-                        case '1000 cc':
-                            category1000.push(racer);
-                            break;
-                        case '600 cc':
-                            category600.push(racer);
-                            break;
-                        case '400 cc':
-                            category400.push(racer);
-                            break;
-                    }
+                    // Handle lines with incorrect number of values here
+                    console.error(`Invalid CSV line: ${row}`);
                 }
             });
 
@@ -112,36 +116,25 @@ function displayLeaderboard(tableId, data) {
 
     data.forEach((racer, index) => {
         const rank = index + 1;
-        const lapRound = parseInt(racer.lapRound);
-
-        // Log the values for debugging
-        //second log
-        console.log(`lapRound: ${lapRound}`);
 
         // Format lap count to always display two digits
-    
-        const formattedLapRound = lapRound < 10 ? `0${lapRound}` : lapRound.toString();
+        const formattedLapRound = parseInt(racer.lapRound);
 
-
-
-        const lapsBehind = index === 0 ? '' : `(${numberOneLapRound - lapRound} laps behind)`;
+        const lapsBehind = index === 0 ? '' : `(${numberOneLapRound - formattedLapRound} laps behind)`;
         const lastLapTimeWithLapsBehind = `${formatTime(racer.lastLapTimeSec)} ${lapsBehind}`;
-
-        
-        console.log(`formattedLapRound: ${formattedLapRound}`);
 
         const newRow = `
             <tr>
                 <td>${rank}</td>
                 <td>${racer.name}</td>
-                <td>${formatTime(racer.totalTimeSec)} / ${formattedLapRound} lap(s) </td>
+                <td>${formatTime(racer.totalTimeSec)} / ${formattedLapRound} lap(s)</td>
                 <td>${lastLapTimeWithLapsBehind}</td>
+               
             </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', newRow);
     });
 }
-
 
 // Fetch and process data when the page loads
 fetchData();
