@@ -25,6 +25,9 @@ function fetchData() {
                     lapRound
                 ] = row.split(',');
 
+                
+
+
                 const totalTimeSec = parseFloat(_totalTimeSec); // Parse "Total Time (sec)" as a float
                 const lastLapTimeSec = parseFloat(_lastLapTimeSec);
 
@@ -33,7 +36,7 @@ function fetchData() {
                     name,
                     totalTimeSec: parseFloat(totalTimeSec),
                     lastLapTimeSec: parseFloat(lastLapTimeSec),
-                    lapRound: parseInt(lapRound),
+                    lapRound: parseInt(lapRound, 10),
                 };
 
                 // Check if racer already exists in the map
@@ -111,6 +114,14 @@ function displayLeaderboard(tableId, data) {
         const rank = index + 1;
         const lapRound = parseInt(racer.lapRound);
 
+        // Log the values for debugging
+    
+        console.log(`lapRound: ${lapRound}`);
+
+        // Format lap count to always display two digits
+        const formattedLapRound = lapRound < 10 ? `0${lapRound}` : lapRound;
+
+
         const lapsBehind = index === 0 ? '' : `(${numberOneLapRound - lapRound} laps behind)`;
         const lastLapTimeWithLapsBehind = `${formatTime(racer.lastLapTimeSec)} ${lapsBehind}`;
 
@@ -118,13 +129,14 @@ function displayLeaderboard(tableId, data) {
             <tr>
                 <td>${rank}</td>
                 <td>${racer.name}</td>
-                <td>${formatTime(racer.totalTimeSec)} / ${racer.lapRound} laps </td>
+                <td>${formatTime(racer.totalTimeSec)} / ${formattedLapRound} lap(s) </td>
                 <td>${lastLapTimeWithLapsBehind}</td>
             </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', newRow);
     });
 }
+
 
 // Fetch and process data when the page loads
 fetchData();
