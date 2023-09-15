@@ -76,6 +76,10 @@ print("Type 'finish' and press 'Enter' at any time to finish the race.")
 user_input = input("Enter a command: ")
 
 if user_input.lower() == 'start':
+    with open('scanned_data_log.csv', 'w', newline='') as csvfile:
+        header = ['Scanned Time', 'Tag Code', 'Name', 'Motor Type', 'Total Time (sec)', 'Lap Time (sec)', 'Total Time (hh:mm:ss)', 'Lap Time (hh:mm:ss)', 'Lap Count']
+        writer = csv.writer(csvfile)
+        writer.writerow(header)
     starttime = time.time()
     lasttime = {}
     scan_counts = {}
@@ -89,7 +93,7 @@ if user_input.lower() == 'start':
             if data:
                 # Filter out non-printable characters before printing the data
                 filtered_data = filter_non_printable(data)
-                tag_code = filtered_data[:-1]  # Remove the last two characters '_Y'
+                tag_code = filtered_data[1:-1]  # Remove the last two characters '_Y'
 
                 # Look up the name corresponding to the RFID code from the dictionary
                 name = rfid_names.get(tag_code, "Unknown")
